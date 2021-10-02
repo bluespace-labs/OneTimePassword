@@ -25,46 +25,9 @@
 
 import Foundation
 import CommonCrypto
-import CryptoKit
 
 func HMAC(algorithm: Generator.Algorithm, key: Data, data: Data) -> Data {
-    if #available(iOS 13.0, macOS 10.15, watchOS 6.0, *) {
-        return cryptoKitHMAC(algorithm: algorithm, key: key, data: data)
-    } else {
-        return commonCryptoHMAC(algorithm: algorithm, key: key, data: data)
-    }
-}
-
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
-private func cryptoKitHMAC(algorithm: Generator.Algorithm, key: Data, data: Data) -> Data {
-    let key = SymmetricKey(data: key)
-
-    func createData(_ ptr: UnsafeRawBufferPointer) -> Data {
-        Data(bytes: ptr.baseAddress!, count: algorithm.hashLength)
-    }
-
-    switch algorithm {
-    case .sha1:
-        return CryptoKit.HMAC<Insecure.SHA1>.authenticationCode(for: data, using: key).withUnsafeBytes(createData)
-    case .sha256:
-        return CryptoKit.HMAC<SHA256>.authenticationCode(for: data, using: key).withUnsafeBytes(createData)
-    case .sha512:
-        return CryptoKit.HMAC<SHA512>.authenticationCode(for: data, using: key).withUnsafeBytes(createData)
-    }
-}
-
-@available(iOS 13.0, macOS 10.15, watchOS 6.0, *)
-private extension Generator.Algorithm {
-    var hashLength: Int {
-        switch self {
-        case .sha1:
-            return Insecure.SHA1.byteCount
-        case .sha256:
-            return SHA256.byteCount
-        case .sha512:
-            return SHA512.byteCount
-        }
-    }
+    return commonCryptoHMAC(algorithm: algorithm, key: key, data: data)
 }
 
 private func commonCryptoHMAC(algorithm: Generator.Algorithm, key: Data, data: Data) -> Data {
